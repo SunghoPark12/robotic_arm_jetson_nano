@@ -1,12 +1,12 @@
 # Personal
 .idea
-*.engine
-*.pt
+#*.engine
+#*.pt
 *.pth
-*.onnx
-*.jpg
-*.jpeg
-*.png
+#*.onnx
+#*.jpg
+#*.jpeg
+#*.png
 *.bmp
 *.plan
 .clang-format
