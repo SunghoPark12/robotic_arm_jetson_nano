@@ -26,7 +26,7 @@ github>[`Ryoyo-NV/People-Flow-Analysis-System`](https://github.com/Ryoyo-NV/Peop
 
 # 로봇팔 실행 방법
 
-<img src="img/robot_arm.jpg" width="100"> <img src="img/robot_arm_with_structure.jpg" width="100">
+<img src="img/robot_arm.jpg" width="200"> <img src="img/robot_arm_with_structure.png" width="200">
 
 로봇팔은 yaw, shoulder, elbow, wrist, wrist_rotation, gripper에 대한 총 6개의 서보모터로 동작합니다.
 
