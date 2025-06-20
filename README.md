@@ -4,7 +4,7 @@
 
 ## 작성자: Team Park (Team3 - 박성호, 박태건)
 
-본 레포지토리는 TRT변환 및 engine을 활용한 추론을 위해 `triple-Mu/YOLOv8-TensorRT`레포지토리를 fork했음을 밝힙니다.[`triple-Mu/YOLOv8-TensorRT`](https://github.com/triple-Mu/YOLOv8-TensorRT)
+본 레포지토리는 TRT변환 및 engine을 활용한 추론을 위해 [`triple-Mu/YOLOv8-TensorRT`](https://github.com/triple-Mu/YOLOv8-TensorRT)레포지토리를 fork했음을 밝힙니다.
 
 ---
 
@@ -12,21 +12,22 @@
 
 ## TRT 변환 및 engine 활용 추론
 
-github>`triple-Mu/YOLOv8-TensorRT`[`triple-Mu/YOLOv8-TensorRT`](https://github.com/triple-Mu/YOLOv8-TensorRT)
+github>[`triple-Mu/YOLOv8-TensorRT`](https://github.com/triple-Mu/YOLOv8-TensorRT)
 
 ## 로봇팔 설계 및 역기구학 동작
 
-thingiverse>`isaac879/3D printed 5-axis Robot Arm (Servo Driven)`[`isaac879/3D printed 5-axis Robot Arm (Servo Driven)`](https://www.thingiverse.com/thing:2703913)
+thingiverse>[`isaac879/3D printed 5-axis Robot Arm (Servo Driven)`](https://www.thingiverse.com/thing:2703913)
 
 ## Img2World 좌표 변환을 위한 클릭 기반 좌표 수집 및 Calibration
 
-github>`Ryoyo-NV/People-Flow-Analysis-System`[`Ryoyo-NV/People-Flow-Analysis-System`](https://github.com/Ryoyo-NV/People-Flow-Analysis-System)
+github>[`Ryoyo-NV/People-Flow-Analysis-System`](https://github.com/Ryoyo-NV/People-Flow-Analysis-System)
 
 ---
 
 # 로봇팔 실행 방법
 
-![robot arm](https://cdn.thingiverse.com/renders/66/84/06/8d/d7/a25609be22d281257c40d9992c95d660_display_large.jpg)
+<img src="https://cdn.thingiverse.com/renders/66/84/06/8d/d7/a25609be22d281257c40d9992c95d660_display_large.jpg" width="250">
+
 로봇팔은 yaw, shoulder, elbow, wrist, wrist_rotation, gripper에 대한 총 6개의 서보모터로 동작합니다.
 
 ## 하드웨어 연결
