@@ -54,8 +54,7 @@ class EngineBuilder:
             config.set_memory_pool_limit(trt.MemoryPoolType.DLA_MANAGED_SRAM,
                                          total_memory // 4)
         elif major_version >= 8:
-            config.set_memory_pool_limit(trt.MemoryPoolType.WORKSPACE,
-                                         total_memory)
+            config.max_workspace_size = total_memory
         else:
             config.max_workspace_size = total_memory
 
