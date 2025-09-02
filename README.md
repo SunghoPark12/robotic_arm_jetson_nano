@@ -1,260 +1,55 @@
-# YOLOv8-TensorRT
+# Robotic Arm for Electronic Component Sorting(on Jetson Nano)
 
-`YOLOv8` using TensorRT accelerate !
+## 한양대학교 융합전자공학부 인공지능플랫폼기초및실습(최정욱 교수님) 프로젝트
 
----
-[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fatrox%2Fsync-dotenv%2Fbadge&style=flat)](https://github.com/triple-Mu/YOLOv8-TensorRT)
-[![Python Version](https://img.shields.io/badge/Python-3.8--3.10-FFD43B?logo=python)](https://github.com/triple-Mu/YOLOv8-TensorRT)
-[![img](https://badgen.net/badge/icon/tensorrt?icon=azurepipelines&label)](https://developer.nvidia.com/tensorrt)
-[![C++](https://img.shields.io/badge/CPP-11%2F14-yellow)](https://github.com/triple-Mu/YOLOv8-TensorRT)
-[![img](https://badgen.net/github/license/triple-Mu/YOLOv8-TensorRT)](https://github.com/triple-Mu/YOLOv8-TensorRT/blob/main/LICENSE)
-[![img](https://badgen.net/github/prs/triple-Mu/YOLOv8-TensorRT)](https://github.com/triple-Mu/YOLOv8-TensorRT/pulls)
-[![img](https://img.shields.io/github/stars/triple-Mu/YOLOv8-TensorRT?color=ccf)](https://github.com/triple-Mu/YOLOv8-TensorRT)
+## 작성자: Team Park (Team3 - 박성호, 박태건)
+
+본 레포지토리는 TRT변환 및 engine을 활용한 추론을 위해 [`triple-Mu/YOLOv8-TensorRT`](https://github.com/triple-Mu/YOLOv8-TensorRT)레포지토리를 fork했음을 밝힙니다.
 
 ---
 
+# 참고 문서
 
-# Prepare the environment
+## TRT 변환 및 engine 활용 추론
 
-1. Install `CUDA` follow [`CUDA official website`](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#download-the-nvidia-cuda-toolkit).
+github>[`triple-Mu/YOLOv8-TensorRT`](https://github.com/triple-Mu/YOLOv8-TensorRT)
 
-   🚀 RECOMMENDED `CUDA` >= 11.4
+## 로봇팔 설계 및 역기구학 동작
 
-2. Install `TensorRT` follow [`TensorRT official website`](https://developer.nvidia.com/nvidia-tensorrt-8x-download).
+thingiverse>[`isaac879/3D printed 5-axis Robot Arm (Servo Driven)`](https://www.thingiverse.com/thing:2703913)
 
-   🚀 RECOMMENDED `TensorRT` >= 8.4
+## Img2World 좌표 변환을 위한 클릭 기반 좌표 수집 및 Calibration
 
-2. Install python requirements.
+github>[`Ryoyo-NV/People-Flow-Analysis-System`](https://github.com/Ryoyo-NV/People-Flow-Analysis-System)
 
-   ``` shell
-   pip install -r requirements.txt
-   ```
+---
 
-3. Install [`ultralytics`](https://github.com/ultralytics/ultralytics) package for ONNX export or TensorRT API building.
+# 로봇팔 실행 방법
 
-   ``` shell
-   pip install ultralytics
-   ```
+<img src="img/robot_arm.jpg" width="200"> <img src="img/robot_arm_with_structure.png" width="200">
 
-5. Prepare your own PyTorch weight such as `yolov8s.pt` or `yolov8s-seg.pt`.
+로봇팔은 yaw, shoulder, elbow, wrist, wrist_rotation, gripper에 대한 총 6개의 서보모터로 동작합니다.
 
-***NOTICE:***
+## 하드웨어 연결
 
-Please use the latest `CUDA` and `TensorRT`, so that you can achieve the fastest speed !
+로봇팔을 작동시키기 위해 PCA9685(서보모터 드라이버)의 채널 0~5에 yaw, shoulder, elbow, wrist, wrist_rotation, gripper 의 서보모터를 순서대로 연결합니다.
+jetson nano와 서보모터 드라이버를 연결합니다.(3.3V 전원, bus1(SDA, SCL), GND 사용 --> Jetson Nano의 1,3,5,6번 핀)
+서보모터 드라이버에 모터 동작 전원을 위해 5V 6A 어댑터를 연결합니다.(모든 GND는 breadboard를 이용해 통합했습니다.)
 
-If you have to use a lower version of `CUDA` and `TensorRT`, please read the relevant issues carefully !
+## 로봇팔 동작시키기
 
-# Normal Usage
-
-If you get ONNX from origin [`ultralytics`](https://github.com/ultralytics/ultralytics) repo, you should build engine by yourself.
-
-You can only use the `c++` inference code to deserialize the engine and do inference.
-
-You can get more information in [`Normal.md`](docs/Normal.md) !
-
-Besides, other scripts won't work.
-
-# Export End2End ONNX with NMS
-
-You can export your onnx model by `ultralytics` API and add postprocess such as bbox decoder and `NMS` into ONNX model at the same time.
-
-``` shell
-python3 export-det.py \
---weights yolov8s.pt \
---iou-thres 0.65 \
---conf-thres 0.25 \
---topk 100 \
---opset 11 \
---sim \
---input-shape 1 3 640 640 \
---device cuda:0
-```
-
-#### Description of all arguments
-
-- `--weights` : The PyTorch model you trained.
-- `--iou-thres` : IOU threshold for NMS plugin.
-- `--conf-thres` : Confidence threshold for NMS plugin.
-- `--topk` : Max number of detection bboxes.
-- `--opset` : ONNX opset version, default is 11.
-- `--sim` : Whether to simplify your onnx model.
-- `--input-shape` : Input shape for you model, should be 4 dimensions.
-- `--device` : The CUDA deivce you export engine .
-
-You will get an onnx model whose prefix is the same as input weights.
-
-# Build End2End Engine from ONNX
-### 1. Build Engine by TensorRT ONNX Python api
-
-You can export TensorRT engine from ONNX by [`build.py` ](build.py).
-
-Usage:
-
-``` shell
-python3 build.py \
---weights yolov8s.onnx \
---iou-thres 0.65 \
---conf-thres 0.25 \
---topk 100 \
---fp16  \
---device cuda:0
-```
-
-#### Description of all arguments
-
-- `--weights` : The ONNX model you download.
-- `--iou-thres` : IOU threshold for NMS plugin.
-- `--conf-thres` : Confidence threshold for NMS plugin.
-- `--topk` : Max number of detection bboxes.
-- `--fp16` : Whether to export half-precision engine.
-- `--device` : The CUDA deivce you export engine .
-
-You can modify `iou-thres` `conf-thres` `topk` by yourself.
-
-### 2. Export Engine by Trtexec Tools
-
-You can export TensorRT engine by [`trtexec`](https://github.com/NVIDIA/TensorRT/tree/main/samples/trtexec) tools.
-
-Usage:
-
-``` shell
-/usr/src/tensorrt/bin/trtexec \
---onnx=yolov8s.onnx \
---saveEngine=yolov8s.engine \
---fp16
-```
-
-**If you installed TensorRT by a debian package, then the installation path of `trtexec`
-is `/usr/src/tensorrt/bin/trtexec`**
-
-**If you installed TensorRT by a tar package, then the installation path of `trtexec` is under the `bin` folder in the path you decompressed**
-
-# Build TensorRT Engine by TensorRT API
-
-Please see more information in [`API-Build.md`](docs/API-Build.md)
-
-***Notice !!!*** We don't support YOLOv8-seg model now !!!
-
-# Inference
-
-## 1. Infer with python script
-
-You can infer images with the engine by [`infer-det.py`](infer-det.py) .
-
-Usage:
-
-``` shell
-python3 infer-det.py \
---engine yolov8s.engine \
---imgs data \
---show \
---out-dir outputs \
---device cuda:0
-```
-
-#### Description of all arguments
-
-- `--engine` : The Engine you export.
-- `--imgs` : The images path you want to detect.
-- `--show` : Whether to show detection results.
-- `--out-dir` : Where to save detection results images. It will not work when use `--show` flag.
-- `--device` : The CUDA deivce you use.
-- `--profile` : Profile the TensorRT engine.
-
-## 2. Infer with C++
-
-You can infer with c++ in [`csrc/detect/end2end`](csrc/detect/end2end) .
-
-### Build:
-
-Please set you own librarys in [`CMakeLists.txt`](csrc/detect/end2end/CMakeLists.txt) and modify `CLASS_NAMES` and `COLORS` in [`main.cpp`](csrc/detect/end2end/main.cpp).
-
-``` shell
-export root=${PWD}
-cd csrc/detect/end2end
-mkdir -p build && cd build
-cmake ..
-make
-mv yolov8 ${root}
-cd ${root}
-```
-
-Usage:
-
-``` shell
-# infer image
-./yolov8 yolov8s.engine data/bus.jpg
-# infer images
-./yolov8 yolov8s.engine data
-# infer video
-./yolov8 yolov8s.engine data/test.mp4 # the video path
-```
-
-# TensorRT Segment Deploy
-
-Please see more information in [`Segment.md`](docs/Segment.md)
-
-# TensorRT Pose Deploy
-
-Please see more information in [`Pose.md`](docs/Pose.md)
-
-# TensorRT Cls Deploy
-
-Please see more information in [`Cls.md`](docs/Cls.md)
-
-# TensorRT Obb Deploy
-
-Please see more information in [`Obb.md`](docs/Obb.md)
-
-# DeepStream Detection Deploy
-
-See more in [`README.md`](csrc/deepstream/README.md)
-
-# Jetson Deploy
-
-Only test on `Jetson-NX 4GB`.
-See more in [`Jetson.md`](docs/Jetson.md)
-
-# Profile you engine
-
-If you want to profile the TensorRT engine:
-
-Usage:
-
-``` shell
-python3 trt-profile.py --engine yolov8s.engine --device cuda:0
-```
-
-# Refuse To Use PyTorch for Model Inference !!!
-
-If you need to break away from pytorch and use tensorrt inference,
-you can get more information in [`infer-det-without-torch.py`](infer-det-without-torch.py),
-the usage is the same as the pytorch version, but its performance is much worse.
-
-You can use `cuda-python` or `pycuda` for inference.
-Please install by such command:
+하드웨어가 연결된 상태에서 이 레포지토리를 다운로드하여 Jetson Nano 터미널에서 다음 명령어를 실행합니다.
 
 ```shell
-pip install cuda-python
-# or
-pip install pycuda
+python3 robot_arm_main.py
 ```
 
-Usage:
+본 프로젝트에 사용된 라이브러리는 모두 pip 설치가 가능합니다. 실행 시 설치되지 않은 라이브러리가 있다면 pip 설치 후 실행 가능합니다.
+해당 파일은 동일 디렉토리 내 detector, calibration 모듈 등을 활용하여 실행됩니다.
 
-``` shell
-python3 infer-det-without-torch.py \
---engine yolov8s.engine \
---imgs data \
---show \
---out-dir outputs \
---method cudart
-```
+실행 시 로봇팔은 웹캠 입력을 받아와 회로 소자를 탐지하고 grip & lay down을 반복합니다.
+웹캠 입력에서 객체가 감지되지 않을 경우 종료됩니다.
 
-#### Description of all arguments
+본 프로젝트는 Jetson Nano의 기본 Jetpack 버전에서 시뮬레이션 되었습니다. (Python 3.6.9, TensorRT 8.2.1)
 
-- `--engine` : The Engine you export.
-- `--imgs` : The images path you want to detect.
-- `--show` : Whether to show detection results.
-- `--out-dir` : Where to save detection results images. It will not work when use `--show` flag.
-- `--method` : Choose `cudart` or `pycuda`, default is `cudart`.
+감사합니다.
